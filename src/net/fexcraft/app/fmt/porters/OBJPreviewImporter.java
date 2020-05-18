@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import net.fexcraft.app.fmt.porters.PorterManager.ExImPorter;
-import net.fexcraft.app.fmt.utils.Settings.Setting;
+import net.fexcraft.app.fmt.utils.Setting;
 import net.fexcraft.app.fmt.wrappers.GroupCompound;
 import net.fexcraft.app.fmt.wrappers.ObjPreviewWrapper;
 
 public class OBJPreviewImporter extends ExImPorter {
 	
-	private static final String[] extensions = new String[]{ ".obj" };
+	private static final String[] extensions = new String[]{ "Wavefront Obj Model", "*.obj" };
 
 	@Override
 	public GroupCompound importModel(File file, Map<String, Setting> settings){

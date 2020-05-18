@@ -7,8 +7,8 @@ import com.google.gson.JsonObject;
 
 import net.fexcraft.lib.common.Static;
 import net.fexcraft.lib.common.math.RGB;
-import net.fexcraft.lib.tmt.ModelRendererTurbo;
-import net.fexcraft.lib.tmt.VoxelBuilder;
+import net.fexcraft.lib.local_tmt.ModelRendererTurbo;
+import net.fexcraft.lib.local_tmt.VoxelBuilder;
 
 public class VoxelWrapper extends PolygonWrapper {
 	
@@ -78,7 +78,7 @@ public class VoxelWrapper extends PolygonWrapper {
 	}
 
 	@Override
-	protected float[][][] newTexturePosition(){
+	public float[][][] newTexturePosition(){
 		/*float tx = 0 , ty = 0, w = size.xCoord, h = size.yCoord, d = size.zCoord;
 		float[][][] vecs = new float[6][][];
 		vecs[0] = new float[][]{

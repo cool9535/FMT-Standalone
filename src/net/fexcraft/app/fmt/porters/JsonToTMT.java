@@ -95,6 +95,15 @@ public class JsonToTMT {
 				cuboid.size.xCoord = get(width, obj, def);
 				cuboid.size.yCoord = get(height, obj, def);
 				cuboid.size.zCoord = get(depth, obj, def);
+				cuboid.sides = parseSides(obj);
+				polygon = cuboid; break;
+			}
+			case "boundingbox": case "bb": {
+				BBWrapper cuboid = new BBWrapper(compound);
+				cuboid.size.xCoord = get(width, obj, def);
+				cuboid.size.yCoord = get(height, obj, def);
+				cuboid.size.zCoord = get(depth, obj, def);
+				cuboid.sides = parseSides(obj);
 				polygon = cuboid; break;
 			}
 			case "shapebox": case "sbox": case "sb": {
@@ -115,6 +124,7 @@ public class JsonToTMT {
 					JsonArray array = obj.getAsJsonArray("face_triangle_flip");
 					for(int i = 0; i < 6; i++) shapebox.bool[i] = array.get(i).getAsBoolean();
 				}*/
+				shapebox.sides = parseSides(obj);
 				polygon = shapebox; break;
 			}
 			case "shapequad": case "squad": case "sq": {
@@ -234,7 +244,20 @@ public class JsonToTMT {
 		polygon.pos.zCoord = get(posz, obj, def);
 		polygon.name = obj.has("name") ? obj.get("name").getAsString() : null;
 		polygon.visible = obj.has("visible") ? obj.get("visible").getAsBoolean() : true;
+		polygon.button.updateColor();
 		return polygon;
+	}
+
+	private static boolean[] parseSides(JsonObject obj){
+		boolean[] sides = new boolean[6];
+		if(obj.has("sides_off")){
+			JsonArray array = obj.get("sides_off").getAsJsonArray();
+			for(int i = 0; i < sides.length; i++){
+				if(i >= array.size()) break;
+				sides[i] = array.get(i).getAsBoolean();
+			}
+		}
+		return sides;
 	}
 	
 }

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import net.fexcraft.app.fmt.FMTB;
 import net.fexcraft.app.fmt.porters.PorterManager.ExImPorter;
-import net.fexcraft.app.fmt.utils.Settings.Setting;
+import net.fexcraft.app.fmt.utils.Setting;
 import net.fexcraft.app.fmt.wrappers.GroupCompound;
 import net.fexcraft.app.fmt.wrappers.MarkerWrapper;
 import net.fexcraft.app.fmt.wrappers.PolygonWrapper;
@@ -23,7 +23,7 @@ import net.fexcraft.app.fmt.wrappers.TurboList;
  */
 public class MarkerExporter extends ExImPorter {
 	
-	private static final String[] extensions = new String[]{ ".txt", ".json" };
+	private static final String[] extensions = new String[]{ "Marker List File", "*.txt", "*.json" };
 	//private static final ArrayList<Setting> settings = new ArrayList<>();
 	
 	public MarkerExporter(){}
@@ -36,7 +36,7 @@ public class MarkerExporter extends ExImPorter {
 	@Override
 	public String exportModel(GroupCompound compound, File file, Map<String, Setting> settings){
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("# FMT Marker List // FMT version: " + FMTB.version + "\n");
+		buffer.append("# FMT Marker List // FMT version: " + FMTB.VERSION + "\n");
 		buffer.append("# Model: " + (compound.name == null ? "unnamed" : compound.name.toLowerCase()) + "\n\n");
 		for(TurboList list : compound.getGroups()){
 			List<PolygonWrapper> coll = list.stream().filter(pre -> pre instanceof MarkerWrapper).collect(Collectors.toList());

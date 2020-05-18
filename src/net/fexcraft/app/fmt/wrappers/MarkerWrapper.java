@@ -5,10 +5,11 @@ import org.lwjgl.opengl.GL11;
 import com.google.gson.JsonObject;
 
 import net.fexcraft.app.fmt.demo.ModelSteve;
-import net.fexcraft.app.fmt.utils.TextureManager;
+import net.fexcraft.app.fmt.utils.Settings;
+import net.fexcraft.app.fmt.utils.texture.TextureManager;
 import net.fexcraft.lib.common.Static;
 import net.fexcraft.lib.common.math.RGB;
-import net.fexcraft.lib.tmt.ModelRendererTurbo;
+import net.fexcraft.lib.local_tmt.ModelRendererTurbo;
 
 public class MarkerWrapper extends PolygonWrapper {
 	
@@ -35,9 +36,11 @@ public class MarkerWrapper extends PolygonWrapper {
 		if(visible && turbo != null){
 			GL11.glDisable(GL11.GL_TEXTURE_2D); turbo.render(); GL11.glEnable(GL11.GL_TEXTURE_2D);
 			if(biped){
+				RGB.glColorReset();
 				GL11.glPushMatrix();
 				GL11.glScalef(scale, scale, scale);
 				GL11.glTranslatef(Static.sixteenth * pos.xCoord, Static.sixteenth * pos.yCoord, Static.sixteenth * pos.zCoord);
+				if(!Settings.oldrot()) GL11.glRotatef(180, 1, 0, 0);
 				TextureManager.bindTexture("steve"); ModelSteve.render(angle);
 				GL11.glPopMatrix();
 			}
@@ -98,7 +101,7 @@ public class MarkerWrapper extends PolygonWrapper {
 	}
 
 	@Override
-	protected float[][][] newTexturePosition(){
+	public float[][][] newTexturePosition(){
 		return new float[0][][];
 	}
 

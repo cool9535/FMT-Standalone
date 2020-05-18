@@ -3,9 +3,9 @@ package net.fexcraft.app.fmt.wrappers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import net.fexcraft.app.fmt.ui.editor.Editor;
+import net.fexcraft.app.fmt.ui.editor.GeneralEditor;
 import net.fexcraft.lib.common.math.Vec3f;
-import net.fexcraft.lib.tmt.ModelRendererTurbo;
+import net.fexcraft.lib.local_tmt.ModelRendererTurbo;
 
 public class CylinderWrapper extends PolygonWrapper {
 	
@@ -80,17 +80,17 @@ public class CylinderWrapper extends PolygonWrapper {
 			case "cyl0":{
 				if(x){
 					radius = value; seg_width = radius / 2;
-					Editor.getGlobalField("cyl6y").applyChange(seg_width);
+					GeneralEditor.cyl6_y.apply(seg_width);
 					return true;
 				}
 				if(y){
 					length = value; seg_height = radius - radius2;
-					Editor.getGlobalField("cyl6z").applyChange(seg_height);
+					GeneralEditor.cyl6_z.apply(seg_height);
 					return true;
 				}
 				if(z){
 					radius2 = value; seg_height = radius - radius2;
-					Editor.getGlobalField("cyl6z").applyChange(seg_height);
+					GeneralEditor.cyl6_z.apply(seg_height);
 					return true;
 				}
 			}
@@ -169,7 +169,7 @@ public class CylinderWrapper extends PolygonWrapper {
 	}
 
 	@Override
-	protected float[][][] newTexturePosition(){
+	public float[][][] newTexturePosition(){
 		float radius = this.radius < 1 ? 1 : this.radius;
 		float length = this.length < 1 ? 1 : this.length;
 		float tx = 0/*textureX*/, ty = 0/*textureY*/, qrad = radius / 2, rad = radius * 2, rad2 = rad + rad;

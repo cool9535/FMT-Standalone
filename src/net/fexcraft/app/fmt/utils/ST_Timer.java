@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright © 2014-2015, Heiko Brumme
+ * Copyright ï¿½ 2014-2015, Heiko Brumme
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,14 @@
  */
 package net.fexcraft.app.fmt.utils;
 
-import org.lwjgl.opengl.Display;
+import org.lwjgl.glfw.GLFW;
 
 import net.fexcraft.app.fmt.FMTB;
 
 /**
  * The timer class is used for calculating delta time and also FPS and UPS calculation.
  * Note by Fex: downgraded to lwjgl2.
+ * 2nd Note by Fex: unchanged after updating FMT to lwjgl3.
  *
  * @author Heiko Brumme
  */
@@ -114,12 +115,12 @@ public class ST_Timer {
             upsCount = 0;
             timeCount -= 1f;
             //
-        	if(Settings.bottombar()){
-				Display.setTitle(String.format(FMTB.deftitle0, FMTB.getTitle())); 
+        	/*if(Settings.bottombar()){
+				GLFW.glfwSetWindowTitle(FMTB.window, String.format(FMTB.deftitle0, FMTB.getTitle()));
         	}
-        	else{
-        		Display.setTitle(String.format(FMTB.deftitle, fps, FMTB.getTitle()));
-        	}
+        	else{*/
+        		GLFW.glfwSetWindowTitle(FMTB.window, String.format(FMTB.deftitle, fps, FMTB.getTitle()));
+        	/*}*/
         }
     }
 

@@ -11,8 +11,8 @@ import com.google.gson.JsonObject;
 
 import net.fexcraft.app.fmt.porters.PorterManager.ExImPorter;
 import net.fexcraft.app.fmt.utils.SaveLoad;
-import net.fexcraft.app.fmt.utils.Settings.Setting;
-import net.fexcraft.app.fmt.utils.Settings.Type;
+import net.fexcraft.app.fmt.utils.Setting;
+import net.fexcraft.app.fmt.utils.Setting.Type;
 import net.fexcraft.app.fmt.wrappers.GroupCompound;
 import net.fexcraft.app.fmt.wrappers.TurboList;
 import net.fexcraft.lib.common.json.JsonUtil;
@@ -23,7 +23,7 @@ import net.fexcraft.lib.common.json.JsonUtil;
  */
 public class JTMTPorter extends ExImPorter {
 	
-	private static final String[] extensions = new String[]{ ".jtmt" };
+	private static final String[] extensions = new String[]{ "JTMT Model", "*.jtmt" };
 	private static final ArrayList<Setting> settings = new ArrayList<>();
 	static{ settings.add(new Setting(Type.BOOLEAN, "visible_only", false)); }
 	

@@ -4,16 +4,18 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.gson.JsonObject;
 
+import net.fexcraft.app.fmt.utils.Axis3DL;
 import net.fexcraft.app.fmt.utils.Settings;
 import net.fexcraft.lib.common.math.RGB;
 import net.fexcraft.lib.common.math.Vec3f;
-import net.fexcraft.lib.tmt.ModelRendererTurbo;
+import net.fexcraft.lib.local_tmt.ModelRendererTurbo;
 
 public class ShapeboxWrapper extends BoxWrapper {
 	
 	public Vec3f cor0 = new Vec3f(), cor1 = new Vec3f(), cor2 = new Vec3f(), cor3 = new Vec3f(),
 				 cor4 = new Vec3f(), cor5 = new Vec3f(), cor6 = new Vec3f(), cor7 = new Vec3f();
 	//public boolean bool[] = new boolean[]{ false, false, false, false, false, false };
+	private Axis3DL axe = new Axis3DL();
 	
 	public ShapeboxWrapper(GroupCompound compound){
 		super(compound);
@@ -38,7 +40,7 @@ public class ShapeboxWrapper extends BoxWrapper {
 				cor4.xCoord, cor4.yCoord, cor4.zCoord,
 				cor5.xCoord, cor5.yCoord, cor5.zCoord,
 				cor6.xCoord, cor6.yCoord, cor6.zCoord,
-				cor7.xCoord, cor7.yCoord, cor7.zCoord)
+				cor7.xCoord, cor7.yCoord, cor7.zCoord, sides)
 			.setRotationPoint(pos.xCoord, pos.yCoord, pos.zCoord)
 			.setRotationAngle(rot.xCoord, rot.yCoord, rot.zCoord);
 		//for(int i = 0; i < bool.length; i++){ turbo.getFaces()[i].setOppositeTriangles(bool[i]); }
@@ -75,13 +77,12 @@ public class ShapeboxWrapper extends BoxWrapper {
 			}
 			else{
 				GL11.glPushMatrix();
-				if(rot.xCoord != 0f) GL11.glRotatef(rot.xCoord, 1, 0, 0);
-				if(rot.yCoord != 0f) GL11.glRotatef(rot.yCoord, 0, 1, 0);
-				if(rot.zCoord != 0f) GL11.glRotatef(rot.zCoord, 0, 0, 1);
+				axe.setAngles(-rot.yCoord, -rot.zCoord, -rot.xCoord);
 				Vec3f vector = null;
 				for(int i = 0; i < cornermarkers.length; i++){
-					vector = turbo.getVertices()[i].vector;
+					vector = axe.getRelativeVector(turbo.getVertices()[i].vector);
 					cornermarkers[i].setPosition(vector.xCoord + pos.xCoord, vector.yCoord + pos.yCoord, vector.zCoord + pos.zCoord);
+					cornermarkers[i].setRotationAngle(rot.xCoord, rot.yCoord, rot.zCoord);
 					cornermarkers[i].render();
 				}
 				GL11.glPopMatrix();

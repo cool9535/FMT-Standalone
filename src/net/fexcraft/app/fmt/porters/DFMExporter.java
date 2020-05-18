@@ -11,8 +11,8 @@ import java.util.Map;
 
 import net.fexcraft.app.fmt.FMTB;
 import net.fexcraft.app.fmt.porters.PorterManager.ExImPorter;
-import net.fexcraft.app.fmt.utils.Settings.Setting;
-import net.fexcraft.app.fmt.utils.Settings.Type;
+import net.fexcraft.app.fmt.utils.Setting;
+import net.fexcraft.app.fmt.utils.Setting.Type;
 import net.fexcraft.app.fmt.wrappers.BoxWrapper;
 import net.fexcraft.app.fmt.wrappers.CylinderWrapper;
 import net.fexcraft.app.fmt.wrappers.GroupCompound;
@@ -21,7 +21,7 @@ import net.fexcraft.app.fmt.wrappers.ShapeboxWrapper;
 import net.fexcraft.app.fmt.wrappers.TurboList;
 import net.fexcraft.lib.common.math.TexturedPolygon;
 import net.fexcraft.lib.common.math.TexturedVertex;
-import net.fexcraft.lib.tmt.ModelRendererTurbo;
+import net.fexcraft.lib.local_tmt.ModelRendererTurbo;
 
 /**
  * 
@@ -30,7 +30,7 @@ import net.fexcraft.lib.tmt.ModelRendererTurbo;
  */
 public class DFMExporter extends ExImPorter {
 	
-	protected static final String[] extensions = new String[]{ ".java" };
+	protected static final String[] extensions = new String[]{ "FlansMod Java Model", "*.java" };
 	protected static final String tab = "\t";//"    ";
 	protected static final String tab2 = tab + tab;
 	protected static final String tab3 = tab2 + tab;
@@ -66,7 +66,7 @@ public class DFMExporter extends ExImPorter {
 		pergroupinit = settings.get("per_group_init").getBooleanValue();
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("//FMT-Marker DFM-" + VERSION + "\n");
-		for(String cr : compound.creators){
+		for(String cr : compound.getAuthors()){
 			buffer.append("//Creator: " + cr + "\n");
 		} buffer.append("\n");
 		if(settings.get("per_group_init").getBooleanValue()) buffer.append("//Using PER-GROUP-INIT mode with limit '" + settings.get("max_pg_init_count").getValue() + "'!\n");
@@ -76,7 +76,7 @@ public class DFMExporter extends ExImPorter {
 		buffer.append("import com.flansmod.client.tmt.PositionTextureVertex;\n");
 		buffer.append("import com.flansmod.client.tmt.TexturedPolygon;\n\n");
 		buffer.append("/** This file was exported via the (Default) FlansMod Exporter of<br>\n");
-		buffer.append(" *  FMT (Fex's Modelling Toolbox) v." + FMTB.version + " &copy; " + Year.now().getValue() + " - Fexcraft.net<br>\n");
+		buffer.append(" *  FMT (Fex's Modelling Toolbox) v." + FMTB.VERSION + " &copy; " + Year.now().getValue() + " - Fexcraft.net<br>\n");
 		buffer.append(" *  All rights reserved. For this Model's License contact the Author/Creator.\n */\n");
 		buffer.append("public class " + modelname + " extends " + modeltype + " {\n\n");
 		buffer.append(tab + "private int textureX = " + compound.tx(null) + ";\n");
@@ -221,6 +221,11 @@ public class DFMExporter extends ExImPorter {
 			if(wrapper.rot.xCoord != 0f){
 				buffer.append(tab2 + name + "[" + index + "].rotateAngleZ = " + (float)Math.toRadians(wrapper.rot.zCoord) + "f;\n");
 			} buffer.append("\n");
+			//
+			if(list instanceof TurboList && ((TurboList)list).exportoffset != null){
+				TurboList turbo = (TurboList)list;
+				buffer.append(tab2 + "translate(" + name + format(",%s, %s, %s);\n", null, turbo.exportoffset.xCoord, turbo.exportoffset.yCoord, turbo.exportoffset.zCoord));
+			}
 			index++;
 		}
 	}

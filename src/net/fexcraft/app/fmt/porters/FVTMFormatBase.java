@@ -12,8 +12,8 @@ import java.util.Map;
 import net.fexcraft.app.fmt.FMTB;
 import net.fexcraft.app.fmt.porters.PorterManager.ExImPorter;
 import net.fexcraft.app.fmt.utils.Animator.Animation;
-import net.fexcraft.app.fmt.utils.Settings.Setting;
-import net.fexcraft.app.fmt.utils.Settings.Type;
+import net.fexcraft.app.fmt.utils.Setting;
+import net.fexcraft.app.fmt.utils.Setting.Type;
 import net.fexcraft.app.fmt.wrappers.*;
 
 /**
@@ -23,10 +23,11 @@ import net.fexcraft.app.fmt.wrappers.*;
  */
 public abstract class FVTMFormatBase extends ExImPorter {
 	
-	protected static final String[] extensions = new String[]{ ".java" };
+	protected static final String[] extensions = new String[]{ "FVTM Format Java Model", "*.java" };
 	protected static final String tab = "\t";//"    ";
 	protected static final String tab2 = tab + tab;
 	protected static final String tab3 = tab2 + tab;
+	protected static final String tab4 = tab2 + tab2;
 	protected boolean extended, onlyvisible, onlyselected, pergroupinit;
 	protected String modelname;
 	protected ArrayList<Setting> settings = new ArrayList<>();
@@ -61,7 +62,7 @@ public abstract class FVTMFormatBase extends ExImPorter {
 		buffer.append(getPackageLine());
 		appendImports(buffer);
 		buffer.append("/** This file was exported via the " + getTitle() + " of<br>\n");
-		buffer.append(" *  FMT (Fex's Modelling Toolbox) v." + FMTB.version + " &copy; " + Year.now().getValue() + " - Fexcraft.net<br>\n");
+		buffer.append(" *  FMT (Fex's Modelling Toolbox) v." + FMTB.VERSION + " &copy; " + Year.now().getValue() + " - Fexcraft.net<br>\n");
 		buffer.append(" *  All rights reserved. For this Model's License contact the Author/Creator.\n */\n");
 		appendClassDeclaration(buffer);
 		if(this.extended){
@@ -74,7 +75,7 @@ public abstract class FVTMFormatBase extends ExImPorter {
 		}
 		buffer.append(tab + "public " + modelname + "(){\n");
 		buffer.append(tab2 + "super(); textureX = " + compound.tx(null) + "; textureY = " + compound.ty(null) + ";\n");
-		for(String cr : compound.creators){
+		for(String cr : compound.getAuthors()){
 			buffer.append(tab2 + "this.addToCreators(\"" + cr + "\");\n");//TODO add "uuid" of logged in users if available;
 		} buffer.append(tab2 + "//\n");
 		if(pergroupinit){
@@ -118,7 +119,7 @@ public abstract class FVTMFormatBase extends ExImPorter {
 		}
 		//buffer.append(tab2 + "fixRotations();\n");
 		//
-		try {
+		try{
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 			writer.append(buffer); writer.flush(); writer.close();
 		}
@@ -161,9 +162,18 @@ public abstract class FVTMFormatBase extends ExImPorter {
 			switch(wrapper.getType()){
 				case BOX:{
 					BoxWrapper box = (BoxWrapper)wrapper;
-					shape.append(format(".addBox(%s, %s, %s, %s, %s, %s)", null,
-						wrapper.off.xCoord, wrapper.off.yCoord, wrapper.off.zCoord,
-						box.size.xCoord, box.size.yCoord, box.size.zCoord));
+					if(box.anySidesOff()){
+						shape.append(format("\n" + tab3 + ".addBox(%s, %s, %s, %s, %s, %s, 0, 1f, ", null,
+							wrapper.off.xCoord, wrapper.off.yCoord, wrapper.off.zCoord,
+							box.size.xCoord, box.size.yCoord, box.size.zCoord));
+						shape.append(String.format("new boolean[]{ %s, %s, %s, %s, %s, %s })", box.sides[0], box.sides[1], box.sides[2], box.sides[3], box.sides[4], box.sides[5]));
+						extended = true;
+					}
+					else{
+						shape.append(format(".addBox(%s, %s, %s, %s, %s, %s)", null,
+							wrapper.off.xCoord, wrapper.off.yCoord, wrapper.off.zCoord,
+							box.size.xCoord, box.size.yCoord, box.size.zCoord));
+					}
 					break;
 				}
 				case QUAD:{
@@ -175,13 +185,25 @@ public abstract class FVTMFormatBase extends ExImPorter {
 				}
 				case SHAPEBOX:{
 					ShapeboxWrapper box = (ShapeboxWrapper)wrapper;
-					shape.append(format("\n" + tab3 + ".addShapeBox(%s, %s, %s, %s, %s, %s, 0, "
-						+ "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", null,
-						wrapper.off.xCoord, wrapper.off.yCoord, wrapper.off.zCoord, box.size.xCoord, box.size.yCoord, box.size.zCoord,
-						box.cor0.xCoord, box.cor0.yCoord, box.cor0.zCoord, box.cor1.xCoord, box.cor1.yCoord, box.cor1.zCoord,
-						box.cor2.xCoord, box.cor2.yCoord, box.cor2.zCoord, box.cor3.xCoord, box.cor3.yCoord, box.cor3.zCoord,
-						box.cor4.xCoord, box.cor4.yCoord, box.cor4.zCoord, box.cor5.xCoord, box.cor5.yCoord, box.cor5.zCoord,
-						box.cor6.xCoord, box.cor6.yCoord, box.cor6.zCoord, box.cor7.xCoord, box.cor7.yCoord, box.cor7.zCoord));
+					if(box.anySidesOff()){
+						shape.append(format("\n" + tab3 + ".addShapeBox(%s, %s, %s, %s, %s, %s, 0, "
+							+ "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,", null,
+							wrapper.off.xCoord, wrapper.off.yCoord, wrapper.off.zCoord, box.size.xCoord, box.size.yCoord, box.size.zCoord,
+							box.cor0.xCoord, box.cor0.yCoord, box.cor0.zCoord, box.cor1.xCoord, box.cor1.yCoord, box.cor1.zCoord,
+							box.cor2.xCoord, box.cor2.yCoord, box.cor2.zCoord, box.cor3.xCoord, box.cor3.yCoord, box.cor3.zCoord,
+							box.cor4.xCoord, box.cor4.yCoord, box.cor4.zCoord, box.cor5.xCoord, box.cor5.yCoord, box.cor5.zCoord,
+							box.cor6.xCoord, box.cor6.yCoord, box.cor6.zCoord, box.cor7.xCoord, box.cor7.yCoord, box.cor7.zCoord));
+						shape.append(String.format("\n" + tab4 + "new boolean[]{ %s, %s, %s, %s, %s, %s })", box.sides[0], box.sides[1], box.sides[2], box.sides[3], box.sides[4], box.sides[5]));
+					}
+					else{
+						shape.append(format("\n" + tab3 + ".addShapeBox(%s, %s, %s, %s, %s, %s, 0, "
+							+ "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", null,
+							wrapper.off.xCoord, wrapper.off.yCoord, wrapper.off.zCoord, box.size.xCoord, box.size.yCoord, box.size.zCoord,
+							box.cor0.xCoord, box.cor0.yCoord, box.cor0.zCoord, box.cor1.xCoord, box.cor1.yCoord, box.cor1.zCoord,
+							box.cor2.xCoord, box.cor2.yCoord, box.cor2.zCoord, box.cor3.xCoord, box.cor3.yCoord, box.cor3.zCoord,
+							box.cor4.xCoord, box.cor4.yCoord, box.cor4.zCoord, box.cor5.xCoord, box.cor5.yCoord, box.cor5.zCoord,
+							box.cor6.xCoord, box.cor6.yCoord, box.cor6.zCoord, box.cor7.xCoord, box.cor7.yCoord, box.cor7.zCoord));
+					}
 					extended = true;
 					break;
 				}
@@ -266,8 +288,8 @@ public abstract class FVTMFormatBase extends ExImPorter {
 				shape.append("\n" + tab3 + ".setMirrored(" + wrapper.mirror + ").setFlipped(" + wrapper.flip + ")");
 				extended = true;
 			}
-			if(this.extended && (compound.texture != null || !wrapper.visible)){
-				shape.append("\n" + tab3 + ".setTextured(" + (compound.texture != null) + ").setLines(" + !wrapper.visible + ")");
+			if(this.extended && (compound.texgroup != null || !wrapper.visible)){
+				shape.append("\n" + tab3 + ".setTextured(" + (compound.texgroup != null) + ").setLines(" + !wrapper.visible + ")");
 				extended = true;
 			}
 			if(wrapper.name != null){ shape.append(".setName(\"" + wrapper.name + "\")"); }
@@ -282,6 +304,9 @@ public abstract class FVTMFormatBase extends ExImPorter {
 					if(string != null && !string.equals("")){
 						buffer.append(tab2 + name + ".addProgram(" + string + ");\n");
 					}
+				}
+				if(turbo.exportoffset != null){
+					buffer.append(tab2 + name + format(".translate(%s, %s, %s);\n", null, turbo.exportoffset.xCoord, turbo.exportoffset.yCoord, turbo.exportoffset.zCoord));
 				}
 			}
 			buffer.append(tab2 + "this.groups.add(" + name + ");\n");

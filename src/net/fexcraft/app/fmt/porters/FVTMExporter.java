@@ -3,8 +3,9 @@ package net.fexcraft.app.fmt.porters;
 import java.io.File;
 import java.util.Map;
 
-import net.fexcraft.app.fmt.utils.Settings.Setting;
-import net.fexcraft.app.fmt.utils.Settings.Type;
+import net.fexcraft.app.fmt.utils.Setting;
+import net.fexcraft.app.fmt.utils.Setting.StringArraySetting;
+import net.fexcraft.app.fmt.utils.Setting.Type;
 import net.fexcraft.app.fmt.wrappers.GroupCompound;
 
 /**
@@ -19,9 +20,9 @@ public class FVTMExporter extends FVTMFormatBase {
 	
 	public FVTMExporter(){
 		super("FVTM v3 Scheme", "fvtm_exporter");
-		settings.add(new Setting(Type.STRING, "pack_id", "your-addon-id"));
+		settings.add(new Setting(Type.STRING, "pack_id", "your_addon_id"));
 		settings.add(new Setting(Type.STRING, "model_id", "null"));
-		settings.add(new Setting(Type.STRING, "model_type", "part"));
+		settings.add(new StringArraySetting("model_type", "part", "vehicle", "container", "roadsign", "block"));
 		settings.add(new Setting(Type.STRING, "model_name", "default"));
 	}
 

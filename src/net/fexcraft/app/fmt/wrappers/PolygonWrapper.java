@@ -1,20 +1,20 @@
 package net.fexcraft.app.fmt.wrappers;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-
 import org.lwjgl.opengl.GL11;
 
 import com.google.gson.JsonObject;
 
+import net.fexcraft.app.fmt.FMTB;
 import net.fexcraft.app.fmt.ui.editor.TextureEditor;
-import net.fexcraft.app.fmt.ui.tree.ModelTree;
-import net.fexcraft.app.fmt.ui.tree.RightTree.PolygonButton;
+import net.fexcraft.app.fmt.ui.tree.SubTreeGroup;
+import net.fexcraft.app.fmt.ui.tree.Trees;
 import net.fexcraft.app.fmt.utils.Settings;
+import net.fexcraft.app.fmt.utils.texture.Texture;
+import net.fexcraft.app.fmt.utils.texture.TextureGroup;
 import net.fexcraft.lib.common.math.RGB;
 import net.fexcraft.lib.common.math.Vec3f;
 import net.fexcraft.lib.common.utils.Print;
-import net.fexcraft.lib.tmt.ModelRendererTurbo;
+import net.fexcraft.lib.local_tmt.ModelRendererTurbo;
 
 public abstract class PolygonWrapper {
 	
@@ -31,13 +31,13 @@ public abstract class PolygonWrapper {
 	private TurboList turbolist;
 	public boolean mirror, flip;
 	public boolean selected;
-	public int[] color;
+	public byte[][] color;
 	public String name;
 	//
-	public PolygonButton button;
+	public SubTreeGroup button;
 	
 	public PolygonWrapper(GroupCompound compound){
-		this.compound = compound; button = new PolygonButton(ModelTree.TREE, this);
+		this.compound = compound; button = new SubTreeGroup(Trees.polygon, this);
 	}
 	
 	public void recompile(){
@@ -155,9 +155,11 @@ public abstract class PolygonWrapper {
 	}
 	
 	protected void setupMRT(){
-		turbo = newMRT().setTextured(compound.texture != null || (getTurboList() != null && getTurboList().getGroupTexture() != null));
-		lines = newMRT().setLines(true);
-		sellines = newMRT().setLines(Settings.getSelectedColor());
+		boolean textured = compound.helpertex != null || compound.texgroup != null;
+		if(!textured) textured = getTurboList() != null && (getTurboList().getTextureGroup() != null || getTurboList().helpertex != null);
+		turbo = newMRT().setTextured(textured);
+		lines = newMRT().setLines(getType().isBoundingBox() ? Settings.getBoundingBoxColor() : RGB.BLACK);
+		sellines = newMRT().setLines(getType().isBoundingBox() ? Settings.getBoundingBoxColor() : Settings.getSelectedColor());
 		//
 		picker = new ModelRendererTurbo(null, 0, 0, 16, 16){
 			@Override
@@ -176,23 +178,26 @@ public abstract class PolygonWrapper {
 	
 	private RGB genColor(ModelRendererTurbo turbo, int face){
 		if(color == null || face >= color.length){
-			color = new int[turbo.getFaces().length];
+			color = new byte[turbo.getFaces().length][];
 			for(int i = 0; i < color.length; i++){
-				color[i] = lastint += 1;
-				if(color[i] == 2048383){ color[i] = lastint += 1; }
+				color[i] = new RGB(lastint += 1).toByteArray();
+				if(color[i][0] == 31 && color[i][1] == 65 && color[i][2] == 127){
+					color[i] = new RGB(lastint += 1).toByteArray();
+					//I don't remember the reason behind this check but updating it.
+				}
 			}
 		}
-		RGB rgb = new RGB(); rgb.packed = color[face]; return rgb;
+		return new RGB(color[face]);
 	}
 
 	protected abstract ModelRendererTurbo newMRT();
 	
-	protected abstract float[][][] newTexturePosition();
+	public abstract float[][][] newTexturePosition();
 
 	public boolean apply(String id, float value, boolean x, boolean y, boolean z){
 		boolean bool = false;
 		switch(id){
-			case "size":{
+			case "size": case "side0": case "side1":{
 				if(this.getType().isRectagular()){
 					bool = this.setFloat(id, x, y, z, value);
 				} break;
@@ -230,7 +235,7 @@ public abstract class PolygonWrapper {
 		if(i < 0 || i > 2) i = 0; return i == 0 ? turbo : i == 1 ? lines : sellines;
 	}
 	
-	public boolean burnToTexture(BufferedImage image, Integer face){
+	public boolean burnToTexture(Texture tex, Integer face){
 		if(this.texpos == null || this.texpos.length == 0){
 			Print.console("Polygon '" + turbolist.id + ":" + this.name() + "' has no texture data, skipping.");
 			return false;
@@ -238,13 +243,13 @@ public abstract class PolygonWrapper {
 		if(face == null){
 			for(int i = 0; i < texpos.length; i++){
 				float[][] ends = texpos[i]; if(ends == null || ends.length == 0) continue;
-				burn(image, ends, new Color(something.getColor(i).packed).darker().getRGB());
+				burn(tex, ends, something.getColor(i).toByteArray());
 			}
 		}
 		else if(face == -1){
 			for(int i = 0; i < texpos.length; i++){
 				float[][] ends = texpos[i]; if(ends == null || ends.length == 0) continue;
-				burn(image, ends, new Color(TextureEditor.CURRENTCOLOR.packed).getRGB());
+				burn(tex, ends, TextureEditor.CURRENTCOLOR.toByteArray());
 			}
 		}
 		else{
@@ -265,11 +270,11 @@ public abstract class PolygonWrapper {
 					ends = texpos[1];
 				} else return false;
 				if(ends == null || ends.length == 0) return false;
-				burn(image, ends, new Color(TextureEditor.CURRENTCOLOR.packed).getRGB());
+				burn(tex, ends, TextureEditor.CURRENTCOLOR.toByteArray());
 			}
 			else if(this.getType().isRectagular() && !this.getType().isTexRect()){
 				float[][] ends = texpos[face]; if(ends == null || ends.length == 0) return false;
-				burn(image, ends, new Color(TextureEditor.CURRENTCOLOR.packed).getRGB());
+				burn(tex, ends, TextureEditor.CURRENTCOLOR.toByteArray());
 			}
 			else{
 				Print.console("There is no known way of how to handle texture burning of '" + this.getType().name() + "'!");
@@ -278,12 +283,12 @@ public abstract class PolygonWrapper {
 		return true;
 	}
 	
-	private void burn(BufferedImage img, float[][] ends, int color){
+	private void burn(Texture tex, float[][] ends, byte[] bs){
 		for(float x = ends[0][0]; x < ends[1][0]; x += 0.5f){
 			for(float y = ends[0][1]; y < ends[1][1]; y += 0.5f){
 				int xa = (int)(x + textureX), ya = (int)(y + textureY);
-				if(xa >= 0 && xa < img.getWidth() && ya >= 0 && ya < img.getHeight()){
-					img.setRGB(xa, ya, color);
+				if(xa >= 0 && xa < tex.getWidth() && ya >= 0 && ya < tex.getHeight()){
+					tex.set(xa, ya, bs);
 				} else continue;
 			}
 		}
@@ -342,6 +347,21 @@ public abstract class PolygonWrapper {
 			turbo.rotationAngleY = lines.rotationAngleY = sellines.rotationAngleY = picker.rotationAngleY = y;
 			turbo.rotationAngleZ = lines.rotationAngleZ = sellines.rotationAngleZ = picker.rotationAngleZ = z;
 		}
+	}
+
+	public TextureGroup getTextureGroup(){
+		return getTurboList().texgroup == null ? FMTB.MODEL.texgroup : getTurboList().getTextureGroup();
+	}
+
+	public long getFacesAmount(boolean visonly){
+		if(visonly){
+			return turbo.getFaces().length;
+		}
+		if(getType().isCylinder()){
+			CylinderWrapper cyl = (CylinderWrapper)this;
+			return cyl.seglimit > 0 && cyl.seglimit < cyl.segments ? cyl.seglimit * 4 + 2 : cyl.segments * (cyl.radius2 > 0 ? 4 : 3);
+		}
+		return 6;
 	}
 	
 }
